@@ -177,7 +177,7 @@ void Renderer::draw(const std::vector<Vertex>& vertices, BlendMode mode)
     // 2 = vec4 colour
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          reinterpret_cast<void>(5 * sizeof(float)));
+                          reinterpret_cast<void*>(5 * sizeof(float)));
 
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
 

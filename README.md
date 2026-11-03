@@ -4,9 +4,8 @@ A 2D side-view, lane-based tower defense game in the spirit of *Plants vs. Zombi
 you buy characters (cards) with coins collected from defeated enemies, place them on
 one of four horizontal lanes, and they fight the enemies that walk in from the right.
 
-The logic layer is deliberately **theme-neutral** — the specification leaves the
-setting and art style to the team, and no asset exists in the project yet (see §1 and
-§6, where one suggestion is spelled out).
+The game uses a warm garden-defense visual style built from OpenGL shapes and a
+small built-in bitmap font. No external art or font files are required.
 
 The assignment specification lives next to this file: `Project1_description.pdf`.
 Everything in the code is traceable to a section of that document — see
@@ -19,25 +18,25 @@ Everything in the code is traceable to a section of that document — see
 | Area | State |
 |---|---|
 | Gameplay **logic** | **Complete** — placement, economy, waves, combat, dodging, shielding, win/lose, menus, cutscene |
-| Console **test harness** | **Complete** — 10 groups / **134 checks**, all passing |
-| **Rendering** | **Not implemented.** The OpenGL host opens a window and clears it to a dark colour. There is a marked seam in `main.cpp` where draw calls belong |
-| **UI** (coins HUD, player cards, health bars, subtitles) | **Not implemented** (data is exposed by the logic, see §6) |
+| Console **test harness** | **Complete** — 10 groups / **136 checks** |
+| **Rendering** | Implemented in the OpenGL host with batched shapes, a built-in bitmap font, and simple animated characters |
+| **UI** (menus, HUD, player cards, health bars, subtitles) | Implemented; menus support mouse and keyboard, and cards support mouse and number keys |
 | **Assets** (models, textures, sounds) | **None**. No file is loaded from disk anywhere in the project |
 | **Audio** | Interface only (`Audio.h`). Every sound trigger is emitted as an event; volume/mute state is real. No audio backend and no sound files |
 | Extra game modes / level design | Not started |
 
-So: **run it today and you get a blank window that plays a complete, testable game
-underneath.** The whole remaining job is presentation plus an audio backend.
+The game is playable with a complete visual interface. External character art and
+audio playback remain optional presentation upgrades.
 
 ### Controls that already work
 | Input | Effect |
 |---|---|
 | Mouse move | Hover highlight follows the lane under the cursor (logic space) |
-| Left click | Toggle the selection of a lane; with a card armed, click places the character |
-| `1` / `2` / `3` | Arm the Melee / Ranged / Defense card (placeholder for the card UI) |
+| Left click | Click a menu option or card; elsewhere toggle a lane, or place an armed character |
+| `1` / `2` / `3` | Arm the Melee / Ranged / Defense card |
 | `W` or `Up` / `S` or `Down` | Make every player of the **selected lanes** jump / duck |
 | `Esc` | Cutscene: skip · Playing: pause menu · Pause menu: resume |
-| Arrow keys + `Enter` | Navigate the menus |
+| Mouse or arrow keys + `Enter` | Navigate the menus |
 | `Q` | Close the window (always) |
 
 ---
@@ -111,7 +110,7 @@ main.cpp (GLFW + glad)                 Game (logic facade)
 | `Cutscene.*` | The 14-second animated intro: actors, timeline events (move / anim / subtitle), current subtitle |
 | `Audio.h` | `SoundSystem` interface (+ `NullSoundSystem` default) — volume, mute, music, `onEvent` |
 | `Game.*` | The facade: owns one of everything, runs the state machine, exposes read-only accessors, collects events |
-| `main.cpp` | GLFW/glad host, callbacks → `InputState`, screen→logic mouse mapping, `glm::ortho` projection, clear colour, and the `// frontend drawing goes here` marker inside the loop |
+| `main.cpp` | GLFW/glad host, input mapping, batched shape renderer, garden battlefield, menus, HUD, cards, and bitmap text |
 | `Tests/logic_tests.cpp` | Console harness driving the real `Game` frame by frame |
 | `External/` | Vendored glad (headers + `src/glad.c`), GLFW headers, `glfw3.lib`, glm |
 
@@ -218,36 +217,20 @@ constant.
 
 ---
 
-## 6. Finishing the project — the rendering seam
+## 6. Presentation
 
-`main.cpp` already has the shader program, the ortho projection, the three uniform
-locations (`u_Model`, `u_View`, `u_Projection`) and a comment marking the drawing
-block. Draw calls go there. The pattern used by the labs (a `struct Mesh` with
-`createMesh` / `drawMesh` / `destroyMesh`, attribute layout `vec3 position + vec3
-colour`, 6 floats per vertex) fits the existing shader unchanged.
+The renderer in `main.cpp` draws four lane backgrounds, the home-base and spawn
+markers, selectable lane highlights, character silhouettes and health bars,
+projectiles, collectibles, the coin/wave/enemy HUD, and three player cards. Cards
+show their price and locked state; click a card or press `1`/`2`/`3`, then click a
+lane to place it. Menus can be navigated with the arrow keys and Enter or by
+hovering and clicking. The pause screen leaves the battlefield visible behind its
+panel, and the win/lose screens offer restart and return-to-menu actions.
 
-Suggested order, because it also produces the fastest visible progress:
-
-1. **Lanes** — for each `lane < playfield.laneCount()`, a quad between
-   `laneBottomY(lane)` and `laneTopY(lane)`; alternate shades; draw a distinct strip
-   for the home base (`0 … homeBaseX()`) and a boundary marker at `rightmostX()`.
-   Highlight `playfield.hoveredLane()` and every lane where
-   `playfield.isLaneSelected(lane)` — this alone makes the lane rules visible.
-2. **Characters** — players and enemies at `laneCenterY(lane)`, walk/attack animation
-   driven by `animTime` and `attacking`, red damage tint from `hitFlash`, health bar
-   from `healthRatio()` above each one (spec §4.1 demands visible health at all times,
-   and separate silhouettes per type, not recolours).
-3. **Collectibles** (they have their own `bobTime` clock) and **projectiles**.
-4. **HUD** — coin total (`economy().coins()` / `earnedTotal()`), the three player
-   cards (grey out and ignore input when `!economy().isUnlocked(type)`, highlight the
-   armed one with `game.armedCard()`), and call **`Game::selectCard(type)`** for card
-   clicks so all the unlock/afford checks stay in one place.
-5. **Menus and cutscene** — `game.menu()` gives kind, labels and highlighted index;
-   `game.cutscene()` gives actors with positions/animation names and the current
-   subtitle.
-6. **Environment** — spec §4.2 wants at least five environmental elements from the
-   chosen setting (towers, walls, banners, torches, gate, stone structures for an
-   outpost theme).
+The title screen, cutscene subtitles, controls hints, and menu labels use a
+procedural bitmap font, so the project does not need external image or font assets.
+The current character and environment art is intentionally simple geometry; custom
+art and an audio backend are future polish rather than prerequisites for play.
 
 ### Audio backend
 `Game` owns a `NullSoundSystem` (a concrete member — swap the member type or add a
@@ -258,11 +241,9 @@ it, forward `onEvent()` to a lookup of the 25 `SfxId` values, implement
 Background music + at least 4 interaction sounds + a working settings menu is the
 spec's optional bonus (§5).
 
-### Not implemented, in one list
-* Every visual: models, textures, health bars, HUD, cards, subtitles, cutscene
-  staging, environment — spec §4.1 and §4.2 are currently **unmet**.
+### Remaining optional work
+* Custom models/textures and richer cutscene staging.
 * Audio playback and sound files — the §5 bonus is currently **unmet**.
-* Nothing else: the logic in §3 and §4.3 of the spec is complete.
 
 ---
 

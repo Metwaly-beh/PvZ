@@ -6,11 +6,9 @@
 //
 // The ONLY thing the game logic knows about input.
 //
-// Every field is an EDGE: it is true for exactly one update() call and then
-// the host (main.cpp GLFW callbacks, or the console test harness) clears it
-// again. That matches the GLFW_PRESS / GLFW_RELEASE semantics explained in
-// Lab3's keyCallback - you want "the key was pressed this frame", not
-// "the key is still held", for menu navigation, lane clicks and jump/duck.
+// Button fields are edges: they are true for exactly one update() call and
+// then the host clears them. Mouse coordinates and UI hit targets are refreshed
+// each frame. This matches GLFW_PRESS semantics for menu and gameplay actions.
 //
 // Mouse coordinates are already converted to LOGIC space by the host:
 //   mouseX in [0, PLAYFIELD_WIDTH],  mouseY in [0, PLAYFIELD_HEIGHT] (y up).
@@ -21,6 +19,7 @@ struct InputState
     // mouse position (logic units) - refreshed every frame, not an edge
     float mouseX;
     float mouseY;
+    bool mouseMoved;
 
     // pointer
     bool leftClickPressed;   // left button went down this frame
@@ -35,6 +34,10 @@ struct InputState
     bool enterPressed;       // confirm the highlighted menu entry
     bool escapePressed;      // open / close the pause menu
 
+    // UI hit targets are resolved by the frontend and consumed by menus.
+    int menuItemHovered;
+    int menuItemClicked;
+
     // player cards (1 = Melee, 2 = Ranged, 3 = Defense).
     // The frontend UI will call Game::selectCard() instead; the keys exist so
     // the game is playable (and testable) without any UI at all.
@@ -46,9 +49,11 @@ struct InputState
     {
         mouseX = 0.0f;
         mouseY = 0.0f;
+        mouseMoved = false;
         leftClickPressed = false;
         wPressed = sPressed = upPressed = downPressed = false;
         enterPressed = escapePressed = false;
+        menuItemHovered = menuItemClicked = -1;
         card1Pressed = card2Pressed = card3Pressed = false;
     }
 
@@ -56,8 +61,10 @@ struct InputState
     void clearEdges()
     {
         leftClickPressed = false;
+        mouseMoved = false;
         wPressed = sPressed = upPressed = downPressed = false;
         enterPressed = escapePressed = false;
+        menuItemHovered = menuItemClicked = -1;
         card1Pressed = card2Pressed = card3Pressed = false;
     }
 

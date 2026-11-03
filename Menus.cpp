@@ -91,12 +91,20 @@ MenuAction Menu::handleInput(const InputState& in)
     int count = itemCount();
     if (count <= 0) return MenuAction::None;
 
-    // GLFW_PRESS edges only: one step per key press, like Lab3's notes explain
+    if (in.menuItemHovered >= 0 && in.menuItemHovered < count)
+        m_selected = in.menuItemHovered;
+
+    // Keyboard navigation remains edge-triggered: one step per key press.
     if (in.upPressed) {
         m_selected = (m_selected - 1 + count) % count;
     }
     if (in.downPressed) {
         m_selected = (m_selected + 1) % count;
+    }
+
+    if (in.menuItemClicked >= 0 && in.menuItemClicked < count) {
+        m_selected = in.menuItemClicked;
+        return actionOf(m_selected);
     }
 
     if (in.enterPressed) {
