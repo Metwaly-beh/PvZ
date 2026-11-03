@@ -1,39 +1,22 @@
 #ifndef RENDER_CHARACTERS_H
 #define RENDER_CHARACTERS_H
-
 #include "SpriteAnim.h"
 #include <string>
-#include <vector>
 
-// ---------------------------------------------------------------------------
-// CharacterSprites.h
-//
-// Maps game roles to specific sprite sheet metadata.
-// This keeps the artwork logic separate from the gameplay logic.
-// ---------------------------------------------------------------------------
-
-struct SpriteSheetInfo {
-    std::string assetName;
-    int frameWidth;
-    int frameHeight;
-    int cols;
-    int rows;
+struct SheetInfo {
+    std::string name;
+    int fw, fh, cols, rows;
 };
 
-struct CharacterVisuals {
-    SpriteSheetInfo sheet;
-    SpriteAnim idle;
-    SpriteAnim walk;
-    SpriteAnim attack;
-    SpriteAnim death;
+struct CharArt {
+    SheetInfo sheet;
+    SpriteAnim idle, walk, attack, death;
 };
 
-// The defined visual sets for our six characters.
-extern const CharacterVisuals PLAYER_MELEE;
-extern const CharacterVisuals PLAYER_RANGED;
-extern const CharacterVisuals PLAYER_TANK;
-extern const CharacterVisuals ENEMY_TANK;
-extern const CharacterVisuals ENEMY_RANGED;
-extern const CharacterVisuals ENEMY_SWARM;
-
-#endif // RENDER_CHARACTERS_H
+extern const CharArt p_melee;
+extern const CharArt p_ranged;
+extern const CharArt p_tank;
+extern const CharArt e_tank;
+extern const CharArt e_ranged;
+extern const CharArt e_swarm;
+#endif
