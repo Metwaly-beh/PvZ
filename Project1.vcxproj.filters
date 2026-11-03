@@ -12,6 +12,12 @@
     <Filter Include="Header Files\Core">
       <UniqueIdentifier>{6C1D9E3A-7F04-4A93-8C27-1B9E0D5A3F62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render">
+      <UniqueIdentifier>{B2E41C77-5A0D-4E6B-9C31-7F1A2D8E4B10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Render">
+      <UniqueIdentifier>{C3F52D88-6B1E-4F7C-AD42-8E2B3F9A5C21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -46,6 +52,15 @@
     </ClCompile>
     <ClCompile Include="Waves.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Canvas.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Renderer.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\SceneRenderer.cpp">
+      <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="External\src\glad.c">
       <Filter>Source Files</Filter>
@@ -99,6 +114,21 @@
     </ClInclude>
     <ClInclude Include="Core\Types.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Canvas.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Core.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Palette.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Renderer.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\SceneRenderer.h">
+      <Filter>Header Files\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

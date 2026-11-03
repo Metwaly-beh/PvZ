@@ -27,18 +27,38 @@
 
 #include "Game.h"
 
+// --- PART 3 (visuals) ------------------------------------------------------
+// Everything between the PART 3 markers belongs to the rendering layer of the
+// project. Part 1 owns the architecture around it; see PART3_RENDERING.md.
+#include "Render/SceneRenderer.h"
+// ---------------------------------------------------------------------------
+
 int g_screenWidth = 1280;
 int g_screenHeight = 720;
 
 Game       g_game;
 InputState g_input;
 
+// --- PART 3 (visuals) ------------------------------------------------------
+SceneRenderer g_sceneRenderer;
+// ---------------------------------------------------------------------------
+
 // ---------------------------------------------------------------------------
 // shaders (identical style to Lab2 Template / Lab4Camera)
 // ---------------------------------------------------------------------------
 
-const char* vertexShaderSource = R"(
-#version 430 core
+// --- PART 3 (platform guard) ----------------------------------------------
+// The GLSL version is the only per-platform difference: macOS stops at
+// OpenGL 4.1, Windows keeps the 4.3 core profile of the labs. The bodies of
+// both shaders are untouched.
+#ifdef __APPLE__
+#define GLSL_VERSION "#version 410 core\n"
+#else
+#define GLSL_VERSION "#version 430 core\n"
+#endif
+// ---------------------------------------------------------------------------
+
+const char* vertexShaderSource = GLSL_VERSION R"(
 
 layout (location = 0) in vec3 aPos;     
 layout (location = 1) in vec3 aColor;   
@@ -57,8 +77,7 @@ void main()
 }
 )";
 
-const char* fragmentShaderSource = R"(
-#version 430 core
+const char* fragmentShaderSource = GLSL_VERSION R"(
 
 in vec3 vColor;
 out vec4 FragColor;
@@ -73,18 +92,33 @@ void main()
 // screen <-> logic space
 //
 // The gameplay lives in PLAYFIELD_WIDTH x PLAYFIELD_HEIGHT logic units with y
-// pointing UP. The window shows exactly that rectangle, so the mapping is a
-// plain linear conversion in (and a glm::ortho in the shader).
+// pointing UP. The window is 16:9 while the playfield is 4:1, so the view is
+// made exactly as tall as the window aspect instead of stretching 6 units over
+// the whole height: one unit stays square on screen, the playfield keeps its
+// y in [0, PLAYFIELD_HEIGHT], and the band above it is free for sky and HUD
+// (see PART3_RENDERING.md).
+//
+// Cursor positions and glfwGetWindowSize are both given in screen points, so
+// the mouse mapping uses the window size - the framebuffer callbacks deliver
+// pixels, which is twice as much on a Retina display.
 // ---------------------------------------------------------------------------
 
-float screenToLogicX(double xpos)
+float viewHeight()
 {
-    return static_cast<float>(xpos / g_screenWidth) * PLAYFIELD_WIDTH;
+    return PLAYFIELD_WIDTH * static_cast<float>(g_screenHeight) /
+           static_cast<float>(g_screenWidth);
 }
 
-float screenToLogicY(double ypos)
+float screenToLogicX(double xpos, int windowWidth)
 {
-    return (1.0f - static_cast<float>(ypos / g_screenHeight)) * PLAYFIELD_HEIGHT;
+    if (windowWidth <= 0) return 0.0f;
+    return static_cast<float>(xpos / windowWidth) * PLAYFIELD_WIDTH;
+}
+
+float screenToLogicY(double ypos, int windowHeight)
+{
+    if (windowHeight <= 0) return 0.0f;
+    return (1.0f - static_cast<float>(ypos / windowHeight)) * viewHeight();
 }
 
 // Same idea as the ortho camera of Lab4: x grows to the right, y grows up, and
@@ -92,7 +126,7 @@ float screenToLogicY(double ypos)
 // of the logic straight to the shader.
 glm::mat4 makeProjection()
 {
-    return glm::ortho(0.0f, PLAYFIELD_WIDTH, 0.0f, PLAYFIELD_HEIGHT, -1.0f, 1.0f);
+    return glm::ortho(0.0f, PLAYFIELD_WIDTH, 0.0f, viewHeight(), -1.0f, 1.0f);
 }
 
 void framebufferSizeCallback(GLFWwindow* /*window*/, int width, int height)
@@ -102,10 +136,14 @@ void framebufferSizeCallback(GLFWwindow* /*window*/, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void cursorPosCallback(GLFWwindow* /*window*/, double xpos, double ypos)
+void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    g_input.mouseX = screenToLogicX(xpos);
-    g_input.mouseY = screenToLogicY(ypos);
+    int windowWidth = 0;
+    int windowHeight = 0;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+    g_input.mouseX = screenToLogicX(xpos, windowWidth);
+    g_input.mouseY = screenToLogicY(ypos, windowHeight);
 }
 
 // A click is an EDGE: it is true for exactly the frame it happened in.
@@ -194,9 +232,20 @@ int main()
 {
     if (!glfwInit()) return -1;
 
+    // --- PART 3 (platform guard) ------------------------------------------
+    // macOS only exposes OpenGL 4.1 (and no 4.3 context), Windows keeps the
+    // 4.3 core profile of the labs.
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+    // -----------------------------------------------------------------------
 
     GLFWwindow* window = glfwCreateWindow(g_screenWidth, g_screenHeight,
                                           "Project1 - 2D Game", nullptr, nullptr);
@@ -247,12 +296,23 @@ int main()
     GLint locView       = glGetUniformLocation(shaderProgram, "u_View");
     GLint locProjection = glGetUniformLocation(shaderProgram, "u_Projection");
 
-    glm::mat4 projection = makeProjection();
     glm::mat4 view       = glm::mat4(1.0f);      // side view, no camera movement
     glm::mat4 model      = glm::mat4(1.0f);
 
-    // start the cursor in the middle of the window
-    cursorPosCallback(window, g_screenWidth * 0.5, g_screenHeight * 0.5);
+    // --- PART 3: the scene renderer may only be created once GL is loaded --
+    if (!g_sceneRenderer.init()) {
+        std::cerr << "Failed to initialise the scene renderer\n";
+        glfwTerminate();
+        return -1;
+    }
+    // ------------------------------------------------------------------------
+
+    // start the cursor in the middle of the window (window size, not
+    // framebuffer size - see screen <-> logic space above)
+    int windowWidth = 0;
+    int windowHeight = 0;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    cursorPosCallback(window, windowWidth * 0.5, windowHeight * 0.5);
 
     std::cout
         << "Controls:\n"
@@ -272,6 +332,10 @@ int main()
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        // --- PART 3: rebuilt every frame, so resizing the window keeps the
+        // units square and the mouse mapping in sync with the projection ----
+        glm::mat4 projection = makeProjection();
+        // --------------------------------------------------------------------
         // ----------------------------------------------------------------
         // 1. hand the frame to the game logic
         // ----------------------------------------------------------------
@@ -304,6 +368,10 @@ int main()
         glUniformMatrix4fv(locProjection, 1, GL_FALSE, glm::value_ptr(projection));
         // (frontend drawing goes here: one draw call per lane / player / enemy)
 
+        // --- PART 3: the visual layer draws the whole scene ----------------
+        g_sceneRenderer.render(g_game, static_cast<float>(glfwGetTime()), projection);
+        // --------------------------------------------------------------------
+
         // ----------------------------------------------------------------
         // 3. present
         // ----------------------------------------------------------------
@@ -314,6 +382,9 @@ int main()
             glfwSetWindowShouldClose(window, true);
     }
 
+    // --- PART 3: release the scene renderer before the context goes away ----
+    g_sceneRenderer.shutdown();
+    // ------------------------------------------------------------------------
     glDeleteProgram(shaderProgram);
     glfwTerminate();
     return 0;
