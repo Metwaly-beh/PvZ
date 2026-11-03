@@ -134,6 +134,19 @@ void testMenuAndCutscene()
     check(std::string(game.menu().itemLabel(0)) == "Start Game", "entry 0 is Start Game");
     check(game.menu().selectedIndex() == 0, "the first entry is highlighted");
 
+    InputState clickSoundSettings;
+    clickSoundSettings.menuItemHovered = 2;
+    clickSoundSettings.menuItemClicked = 2;
+    game.update(0.0f, clickSoundSettings);
+    check(game.menu().kind() == MenuKind::SoundSettings,
+          "clicking a menu entry opens sound settings");
+    InputState clickBack;
+    clickBack.menuItemHovered = 3;
+    clickBack.menuItemClicked = 3;
+    game.update(0.0f, clickBack);
+    check(game.menu().kind() == MenuKind::Main,
+          "clicking Back returns to the main menu");
+
     stepFrames(game, 1, pressKey('d'));
     check(game.menu().selectedIndex() == 1, "Down moves the highlight");
     stepFrames(game, 1, pressKey('d'));
