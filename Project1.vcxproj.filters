@@ -56,6 +56,9 @@
     <ClCompile Include="Render\Canvas.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
+    <ClCompile Include="Render\Environment.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
     <ClCompile Include="Render\Renderer.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
@@ -119,6 +122,9 @@
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="Render\Core.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Environment.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="Render\Palette.h">

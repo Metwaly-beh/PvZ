@@ -159,6 +159,7 @@
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="Waves.cpp" />
     <ClCompile Include="Render\Canvas.cpp" />
+    <ClCompile Include="Render\Environment.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\SceneRenderer.cpp" />
     <ClCompile Include="External\src\glad.c">
@@ -187,6 +188,7 @@
     <ClInclude Include="Core\Types.h" />
     <ClInclude Include="Render\Canvas.h" />
     <ClInclude Include="Render\Core.h" />
+    <ClInclude Include="Render\Environment.h" />
     <ClInclude Include="Render\Palette.h" />
     <ClInclude Include="Render\Renderer.h" />
     <ClInclude Include="Render\SceneRenderer.h" />

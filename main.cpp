@@ -410,32 +410,10 @@ void drawGardenBackdrop()
 
 void drawBattlefield(const Game& game)
 {
+    // The lanes, their highlights, the home base and the enemy entry are all
+    // drawn by the scene renderer (Render/Environment.cpp) before this runs.
     const Playfield& field = game.playfield();
-    addRect(0.0f, 0.0f, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, 0.08f, 0.16f, 0.17f);
 
-    for (int lane = 0; lane < field.laneCount(); ++lane) {
-        const float bottom = field.laneBottomY(lane);
-        const float height = field.laneTopY(lane) - bottom;
-        const bool selected = field.isLaneSelected(lane);
-        const bool hovered = field.hoveredLane() == lane;
-        addRect(0.0f, bottom, PLAYFIELD_WIDTH, height,
-                selected ? 0.22f : (lane % 2 ? 0.15f : 0.18f),
-                selected ? 0.32f : (lane % 2 ? 0.30f : 0.34f),
-                selected ? 0.22f : (lane % 2 ? 0.18f : 0.19f));
-        if (hovered)
-            addRect(0.0f, bottom + 0.04f, PLAYFIELD_WIDTH, height - 0.08f,
-                    0.24f, 0.38f, 0.22f);
-        addRect(0.0f, bottom, PLAYFIELD_WIDTH, 0.035f, 0.08f, 0.19f, 0.13f);
-        addRect(0.0f, bottom + height - 0.035f, PLAYFIELD_WIDTH, 0.035f,
-                0.08f, 0.19f, 0.13f);
-    }
-
-    addRect(0.0f, 0.0f, field.homeBaseX(), PLAYFIELD_HEIGHT,
-            0.16f, 0.25f, 0.20f);
-    addRect(field.homeBaseX(), 0.0f, 0.055f, PLAYFIELD_HEIGHT,
-            0.82f, 0.68f, 0.25f);
-    addRect(field.rightmostX(), 0.0f, 0.035f, PLAYFIELD_HEIGHT,
-            0.76f, 0.36f, 0.24f);
     for (int lane = 0; lane < field.laneCount(); ++lane) {
         const float cy = field.laneCenterY(lane);
         addText(0.18f, cy - 0.09f, std::to_string(lane + 1), 0.055f,
@@ -836,15 +814,21 @@ int main()
         glClearColor(0.04f, 0.08f, 0.10f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // --- PART 3: the visual layer draws the whole scene ----------------
+        // The world goes first: there is no depth test, so whatever is drawn
+        // last ends up on top, and the interface must sit above the world.
+        g_sceneRenderer.render(g_game, static_cast<float>(glfwGetTime()), projection,
+                               viewHeight());
+        // --------------------------------------------------------------------
+
+        // OpenGL remembers its state between draws, and the scene renderer
+        // leaves its own shader and possibly additive blending active.
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(locModel,      1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(locView,       1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(locProjection, 1, GL_FALSE, glm::value_ptr(projection));
         drawGame(g_game, g_input.mouseX, g_input.mouseY, uiVao, uiVbo);
-
-        // --- PART 3: the visual layer draws the whole scene ----------------
-        g_sceneRenderer.render(g_game, static_cast<float>(glfwGetTime()), projection);
-        // --------------------------------------------------------------------
 
         // ----------------------------------------------------------------
         // 3. present
