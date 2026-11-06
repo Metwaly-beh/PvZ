@@ -1,0 +1,7 @@
+Assets/*.zip
+Assets/*.rar
+Assets/*.7z
+Assets/extracted/
+scene_dump.txt
+light_dump.txt
+debug_render.png
