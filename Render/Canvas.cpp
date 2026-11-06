@@ -391,32 +391,36 @@ void Canvas::glow(float cx, float cy, float radius, Color c, int rings)
     }
 }
 
-void Canvas::drawSprite(unsigned int textureId, float sx, float sy, float sw, float sh,
-                float dx, float dy, float dw, float dh, bool flipX)
+void Canvas::drawSprite(float u0, float v0, float u1, float v1,
+                        float dx, float dy, float dw, float dh,
+                        Color tint, bool flipX)
 {
-    // We will use a specific color (white) to tell the renderer that this is a sprite.
-    // However, a better way for a student project is to just add the vertices with UVs.
-    // The current Renderer already uses u_UseTexture, so we just need to pass that.
-    // Since we can't pass a per-vertex uniform, we'll just add the quad and 
-    // we'll handle the "use texture" state in the renderer by grouping.
-    // For now, let's just add the vertices with correct UVs.
-    
-    float u0 = sx / sw;
-    float v0 = sy / sh;
-    float u1 = (sx + sw) / sw;
-    float v1 = (sy + sh) / sh;
-    
     if (flipX) std::swap(u0, u1);
 
-    Color white(1.0f, 1.0f, 1.0f, 1.0f);
-    
-    // Triangle 1
-    m_vertices.push_back(Vertex(dx, dy, u0, v0, white));
-    m_vertices.push_back(Vertex(dx + dw, dy, u1, v0, white));
-    m_vertices.push_back(Vertex(dx + dw, dy + dh, u1, v1, white));
-    
-    // Triangle 2
-    m_vertices.push_back(Vertex(dx, dy, u0, v0, white));
-    m_vertices.push_back(Vertex(dx + dw, dy + dh, u1, v1, white));
-    m_vertices.push_back(Vertex(dx, dy + dh, u0, v1, white));
+    // Sprites live in the same transform space as every other shape, so a
+    // pushed transform moves them exactly like it moves a quad.
+    float blx, bly, brx, bry, trx, trY, tlx, tly;
+    const float x0 = dx, y0 = dy, x1 = dx + dw, y1 = dy + dh;
+    if (m_transform.empty()) {
+        blx = x0; bly = y0;
+        brx = x1; bry = y0;
+        trx = x1; trY = y1;
+        tlx = x0; tly = y1;
+    }
+    else {
+        m_transform.back().apply(x0, y0, blx, bly);
+        m_transform.back().apply(x1, y0, brx, bry);
+        m_transform.back().apply(x1, y1, trx, trY);
+        m_transform.back().apply(x0, y1, tlx, tly);
+    }
+
+    // Bottom-left takes the bottom of the frame, top-right the top, so the
+    // image stays upright in a coordinate system where y grows upwards.
+    m_vertices.push_back(Vertex(blx, bly, u0, v0, tint));
+    m_vertices.push_back(Vertex(brx, bry, u1, v0, tint));
+    m_vertices.push_back(Vertex(trx, trY, u1, v1, tint));
+
+    m_vertices.push_back(Vertex(blx, bly, u0, v0, tint));
+    m_vertices.push_back(Vertex(trx, trY, u1, v1, tint));
+    m_vertices.push_back(Vertex(tlx, tly, u0, v1, tint));
 }

@@ -44,15 +44,19 @@ public:
     void draw(const std::vector<Vertex>& vertices,
               BlendMode mode = BlendMode::Alpha);
 
-    // a simple a-priori check if a texture is bound to the active slot.
+    // Selects the texture every following draw() samples. Pass 0 to go back
+    // to flat colours. The scene binds the character atlas once per frame.
     void bindTexture(unsigned int textureId);
 
 private:
     unsigned int m_program;
     unsigned int m_vao;
     unsigned int m_vbo;
+    unsigned int m_texture;   // 0 = flat colours, otherwise the bound atlas
     int          m_uProjection;
     int          m_uTint;
+    int          m_uTexture;
+    int          m_uUseTexture;
     float        m_projection[16];
     Color        m_tint;
 };

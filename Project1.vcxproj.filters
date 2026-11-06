@@ -53,7 +53,13 @@
     <ClCompile Include="Waves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Render\Assets.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
     <ClCompile Include="Render\Canvas.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\CharacterSprites.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="Render\Environment.cpp">
@@ -63,6 +69,9 @@
       <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="Render\SceneRenderer.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\SpriteAtlasData.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="External\src\glad.c">
@@ -118,7 +127,13 @@
     <ClInclude Include="Core\Types.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Render\Assets.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
     <ClInclude Include="Render\Canvas.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\CharacterSprites.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="Render\Core.h">
@@ -134,6 +149,12 @@
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="Render\SceneRenderer.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\SpriteAnim.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\SpriteAtlas.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
   </ItemGroup>

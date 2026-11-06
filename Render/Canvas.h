@@ -60,10 +60,16 @@ public:
     void bezier(Vec2 p0, Vec2 c0, Vec2 c1, Vec2 p3, float width, Color c,
                 int segments = 16);
 
-    // Sprite rendering: draws a portion of a texture at a specific location.
-    // textureId is a simple handle (GLyint), keeping this class OpenGL-agnostic.
-    void drawSprite(unsigned int textureId, float sx, float sy, float sw, float sh,
-                    float dx, float dy, float dw, float dh, bool flipX = false);
+    // Textured quad - the only shape that samples the character atlas.
+    //   u0..u1, v0..v1 : normalized coordinates inside the atlas
+    //   dx,dy,dw,dh    : destination rectangle in logic units (y points up)
+    //   tint           : multiplied with the sampled texel; white leaves the
+    //                   art untouched, a red wash is the damage flash
+    //   flipX          : mirror horizontally so a sheet drawn facing right
+    //                   can be used by something walking left
+    void drawSprite(float u0, float v0, float u1, float v1,
+                    float dx, float dy, float dw, float dh,
+                    Color tint = Color(), bool flipX = false);
 
     // Soft radial light: flames, glows, sparks. Drawn with additive blending.
     void glow(float cx, float cy, float radius, Color c, int rings = 6);

@@ -420,45 +420,23 @@ void drawBattlefield(const Game& game)
                 0.84f, 0.88f, 0.68f);
     }
 
+    // The character bodies are drawn by the scene renderer
+    // (Render/CharacterSprites.cpp) so they sit on the lanes; only the
+    // overlays stay here, because the interface always paints on top of
+    // the scene and the bars have to remain readable over the sprites.
     for (size_t i = 0; i < game.players().size(); ++i) {
         const Player& player = game.players()[i];
         const float y = field.laneCenterY(player.lane);
-        float red = 0.35f, green = 0.73f, blue = 0.32f;
-        if (player.type == PlayerType::Ranged) { red = 0.34f; green = 0.69f; blue = 0.86f; }
-        if (player.type == PlayerType::Defense) { red = 0.88f; green = 0.66f; blue = 0.27f; }
-        if (player.hitFlash > 0.0f) { red = 0.92f; green = 0.28f; blue = 0.24f; }
-        const float bob = player.state == CharState::Advancing
-            ? std::sin(player.animTime * 8.0f) * 0.045f : 0.0f;
-        addRect(player.x - 0.20f, y - 0.24f + bob, 0.40f, 0.38f, red, green, blue);
-        addRect(player.x - 0.15f, y + 0.14f + bob, 0.30f, 0.25f,
-                0.78f, 0.83f, 0.61f);
-        addRect(player.x - 0.12f, y + 0.23f + bob, 0.05f, 0.05f,
-                0.10f, 0.16f, 0.12f);
-        addRect(player.x + 0.06f, y + 0.23f + bob, 0.05f, 0.05f,
-                0.10f, 0.16f, 0.12f);
-        addRect(player.x - 0.22f, y + 0.45f, 0.44f, 0.07f, 0.10f, 0.14f, 0.12f);
-        addRect(player.x - 0.22f, y + 0.45f, 0.44f * player.healthRatio(), 0.07f,
+        addRect(player.x - 0.22f, y + 0.62f, 0.44f, 0.07f, 0.10f, 0.14f, 0.12f);
+        addRect(player.x - 0.22f, y + 0.62f, 0.44f * player.healthRatio(), 0.07f,
                 0.35f, 0.88f, 0.35f);
     }
 
     for (size_t i = 0; i < game.enemies().size(); ++i) {
         const Enemy& enemy = game.enemies()[i];
         const float y = field.laneCenterY(enemy.lane);
-        float red = 0.72f, green = 0.32f, blue = 0.36f;
-        if (enemy.type == EnemyType::MediumLower) { red = 0.68f; green = 0.40f; blue = 0.75f; }
-        if (enemy.type == EnemyType::HardMelee) { red = 0.80f; green = 0.26f; blue = 0.19f; }
-        if (enemy.hitFlash > 0.0f) { red = 1.0f; green = 0.72f; blue = 0.40f; }
-        const float bob = enemy.state == CharState::Advancing
-            ? std::sin(enemy.animTime * 7.0f) * 0.035f : 0.0f;
-        addRect(enemy.x - 0.20f, y - 0.23f + bob, 0.40f, 0.39f, red, green, blue);
-        addRect(enemy.x - 0.16f, y + 0.14f + bob, 0.32f, 0.25f,
-                0.71f, 0.76f, 0.58f);
-        addRect(enemy.x - 0.12f, y + 0.22f + bob, 0.06f, 0.06f,
-                0.16f, 0.10f, 0.10f);
-        addRect(enemy.x + 0.06f, y + 0.22f + bob, 0.06f, 0.06f,
-                0.16f, 0.10f, 0.10f);
-        addRect(enemy.x - 0.22f, y + 0.45f, 0.44f, 0.07f, 0.10f, 0.14f, 0.12f);
-        addRect(enemy.x - 0.22f, y + 0.45f, 0.44f * enemy.healthRatio(), 0.07f,
+        addRect(enemy.x - 0.22f, y + 0.62f, 0.44f, 0.07f, 0.10f, 0.14f, 0.12f);
+        addRect(enemy.x - 0.22f, y + 0.62f, 0.44f * enemy.healthRatio(), 0.07f,
                 0.90f, 0.31f, 0.24f);
     }
 

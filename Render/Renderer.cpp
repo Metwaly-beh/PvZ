@@ -77,7 +77,9 @@ GLuint compileShader(GLenum type, const std::string& source)
 } // namespace
 
 Renderer::Renderer()
-    : m_program(0), m_vao(0), m_vbo(0), m_uProjection(-1), m_uTint(-1), m_tint(1.0f, 1.0f, 1.0f, 1.0f)
+    : m_program(0), m_vao(0), m_vbo(0), m_texture(0),
+      m_uProjection(-1), m_uTint(-1), m_uTexture(-1), m_uUseTexture(-1),
+      m_tint(1.0f, 1.0f, 1.0f, 1.0f)
 {
     for (int i = 0; i < 16; ++i) m_projection[i] = 0.0f;
     m_projection[0] = m_projection[5] = m_projection[10] = m_projection[15] = 1.0f;
@@ -111,6 +113,8 @@ bool Renderer::init()
 
     m_uProjection = glGetUniformLocation(m_program, "u_Projection");
     m_uTint       = glGetUniformLocation(m_program, "u_Tint");
+    m_uTexture    = glGetUniformLocation(m_program, "u_Texture");
+    m_uUseTexture = glGetUniformLocation(m_program, "u_UseTexture");
 
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
@@ -142,8 +146,10 @@ void Renderer::setTint(Color c)
 
 void Renderer::bindTexture(unsigned int textureId)
 {
+    m_texture = textureId;
+    if (m_texture == 0) return;
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
 }
 
 void Renderer::draw(const std::vector<Vertex>& vertices, BlendMode mode)
@@ -153,6 +159,16 @@ void Renderer::draw(const std::vector<Vertex>& vertices, BlendMode mode)
     glUseProgram(m_program);
     glUniformMatrix4fv(m_uProjection, 1, GL_FALSE, m_projection);
     glUniform4f(m_uTint, m_tint.r, m_tint.g, m_tint.b, m_tint.a);
+
+    // One texture covers the whole frame: sprite vertices carry real UVs,
+    // every other vertex carries (0,0) and lands on the atlas' white column,
+    // so flat shapes and characters share a single draw call.
+    glUniform1i(m_uTexture, 0);
+    glUniform1i(m_uUseTexture, m_texture != 0 ? 1 : 0);
+    if (m_texture != 0) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+    }
 
     if (mode == BlendMode::Additive) glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     else glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -39,6 +39,7 @@ private:
     Canvas   m_canvas;      // solid shapes, normal transparency
     Canvas   m_light;       // flames and glows, additive blending
     float    m_time;
+    unsigned int m_atlas;   // character atlas, owned here
 };
 
 #endif // RENDER_SCENE_RENDERER_H
