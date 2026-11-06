@@ -13,9 +13,9 @@ float enemySpeed(EnemyType type)
 AttackHeight enemyAttackHeight(EnemyType type)
 {
     switch (type) {
-    case EnemyType::EasyUpper:   return AttackHeight::High;   // dodge with DUCK
-    case EnemyType::MediumLower: return AttackHeight::Low;    // dodge with JUMP
-    case EnemyType::HardMelee:   return AttackHeight::Straight; // melee, cannot be dodged
+    case EnemyType::EasyUpper:   return AttackHeight::High;
+    case EnemyType::MediumLower: return AttackHeight::Low;
+    case EnemyType::HardMelee:   return AttackHeight::Straight;
     }
     return AttackHeight::Straight;
 }
@@ -32,8 +32,6 @@ int enemyMaxHp(EnemyType type)
 
 int enemyDamage(EnemyType type)
 {
-    // "All enemies deal 1 point of damage per attack, except for the
-    //  Hard - Melee Enemy, which deals 2 points of damage per attack."
     return (type == EnemyType::HardMelee) ? HARD_ENEMY_DAMAGE : ENEMY_DAMAGE;
 }
 
@@ -58,6 +56,6 @@ Enemy makeEnemy(int id, EnemyType type, int lane, float x)
     e.hp = e.maxHp;
     e.speed = enemySpeed(type);
     e.attackHeight = enemyAttackHeight(type);
-    e.state = CharState::Advancing;   // enemies start walking immediately
+    e.state = CharState::Advancing;
     return e;
 }

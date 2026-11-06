@@ -10,9 +10,9 @@ Economy::Economy()
 void Economy::reset()
 {
     m_coins = STARTING_COINS;
-    m_earnedTotal = 0;             // nothing has been COLLECTED yet
-    m_rangedUnlocked = false;      // "Initially, all player types are locked
-    m_defenseUnlocked = false;     //  except for the Melee Player"
+    m_earnedTotal = 0;
+    m_rangedUnlocked = false;
+    m_defenseUnlocked = false;
 }
 
 int Economy::costOf(PlayerType type)
@@ -27,10 +27,8 @@ int Economy::costOf(PlayerType type)
 
 bool Economy::isUnlocked(PlayerType type) const
 {
-    if (type == PlayerType::Melee) return true;    // the starter card
+    if (type == PlayerType::Melee) return true;
 
-    // A card unlocks once the player has COLLECTED enough points AND still
-    // HOLDS at least that many points (re-lock rule of section 4.3).
     int cost = costOf(type);
     bool held = (m_coins >= cost);
     bool gathered = (m_earnedTotal >= cost);

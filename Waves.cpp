@@ -3,7 +3,6 @@
 Waves::Waves()
     : m_waveIndex(-1), m_spawnTimer(0.0f), m_phase(WavePhase::NotStarted)
 {
-    // the three waves of section 3.3
     WaveSpec w1; w1.minEnemies = WAVE1_MIN_ENEMIES;
     w1.allowEasy = true; w1.allowMedium = false; w1.allowHard = false;
 
@@ -57,7 +56,6 @@ void Waves::beginWave(int wave, Random& rng)
 {
     const WaveSpec& s = spec(wave);
 
-    // "Minimum Number of Enemies" - sometimes one or two extra for variety
     int count = s.minEnemies + rng.range(0, 1);
 
     std::vector<EnemyType> pool;
@@ -66,8 +64,6 @@ void Waves::beginWave(int wave, Random& rng)
     if (s.allowMedium) allowed.push_back(EnemyType::MediumLower);
     if (s.allowHard)   allowed.push_back(EnemyType::HardMelee);
 
-    // "A mix of ..." - make sure every allowed type really shows up, then
-    // fill the rest of the wave at random.
     for (size_t k = 0; k < allowed.size() && static_cast<int>(pool.size()) < count; ++k)
         pool.push_back(allowed[k]);
 
@@ -77,14 +73,13 @@ void Waves::beginWave(int wave, Random& rng)
     }
 
     m_queue = pool;
-    m_spawnTimer = 0.0f;      // the first enemy appears immediately: the wave
-    m_phase = WavePhase::Spawning;   // BEGINS the moment it shows up
+    m_spawnTimer = 0.0f;
+    m_phase = WavePhase::Spawning;
 }
 
 int Waves::pickLane(const std::vector<Enemy>& enemies, Random& rng) const
 {
-    // try a few times to land on a lane that nobody is walking down yet;
-    // this keeps a wave from stacking up in a single lane
+    // law msh n-stack el enemies f lane wa7da
     const int MAX_TRIES = 4;
     for (int attempt = 0; attempt < MAX_TRIES; ++attempt) {
         int lane = rng.range(0, LANE_COUNT - 1);
@@ -96,21 +91,19 @@ int Waves::pickLane(const std::vector<Enemy>& enemies, Random& rng) const
         if (!busy) return lane;
     }
 
-    // every lane is busy (late in a wave) - any lane will do
     return rng.range(0, LANE_COUNT - 1);
 }
 
 Enemy Waves::spawnOne(Random& rng, int& nextId, const std::vector<Enemy>& enemies) const
 {
     EnemyType type = m_queue.front();
-    int lane = pickLane(enemies, rng);            // "in a randomly chosen lane"
+    int lane = pickLane(enemies, rng);
     Enemy e = makeEnemy(nextId++, type, lane, ENEMY_SPAWN_X);
     return e;
 }
 
 int Waves::update(float dt, std::vector<Enemy>& enemies, int& nextId, Random& rng)
 {
-    // the very first call of a round kicks wave 1 off
     if (m_waveIndex == -1) {
         m_waveIndex = 0;
         beginWave(0, rng);
@@ -130,22 +123,19 @@ int Waves::update(float dt, std::vector<Enemy>& enemies, int& nextId, Random& rn
         m_spawnTimer = WAVE_SPAWN_INTERVAL;
 
         if (m_queue.empty()) {
-            // the FINAL enemy of this wave just appeared -> the wave has ENDED
             m_phase = WavePhase::Clearing;
         }
         return 1;
     }
 
     if (m_phase == WavePhase::Clearing) {
-        // "the player must defeat the remaining enemies on screen to proceed
-        //  to the next wave until all waves are covered"
         if (aliveCount(enemies) == 0) {
             ++m_waveIndex;
             if (m_waveIndex < waveCount()) {
                 beginWave(m_waveIndex, rng);
             }
             else {
-                m_phase = WavePhase::NotStarted;   // every wave is done
+                m_phase = WavePhase::NotStarted;
             }
         }
     }

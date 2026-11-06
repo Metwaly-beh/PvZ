@@ -45,7 +45,7 @@ int Collectibles::collectOverlapping(const std::vector<Player>& players)
         for (size_t j = 0; j < players.size(); ++j) {
             const Player& p = players[j];
             if (!p.alive()) continue;
-            if (p.lane != c.lane) continue;                 // pickups are per lane
+            if (p.lane != c.lane) continue;
 
             if (std::fabs(p.x - c.x) <= PICKUP_RADIUS) {
                 gathered += c.value;
