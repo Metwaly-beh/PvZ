@@ -167,7 +167,27 @@ void testMenuAndCutscene()
     for (size_t i = 0; i < actors.size(); ++i) {
         if (actors[i].isPlayer) ++playerActors; else ++enemyActors;
     }
-    check(playerActors >= 1 && enemyActors >= 1, "the cutscene shows a player and an enemy");
+    check(playerActors == 1 && enemyActors == 1, "the cutscene shows one player and one enemy");
+
+    int subtitleCount = 0;
+    int attackCount = 0;
+    bool explainsGarden = false;
+    bool threatensGarden = false;
+    const std::vector<CutsceneEvent>& events = game.cutscene().events();
+    for (size_t i = 0; i < events.size(); ++i) {
+        if (events[i].type == CutsceneEventType::ShowSubtitle) {
+            ++subtitleCount;
+            explainsGarden = explainsGarden ||
+                (events[i].speaker == "Sentinel" && events[i].text.find("seeds") != std::string::npos);
+            threatensGarden = threatensGarden ||
+                (events[i].speaker == "Raider" && events[i].text.find("burn") != std::string::npos);
+        }
+        if (events[i].type == CutsceneEventType::SetAnim && events[i].anim == "attack")
+            ++attackCount;
+    }
+    check(subtitleCount >= 4, "the story advances through timed subtitle lines");
+    check(explainsGarden && threatensGarden, "the dialogue explains and threatens the garden");
+    check(attackCount >= 2, "the cutscene scripts visible attack animations");
 
     // the scene must move and speak, not only print text
     step(game, 3.0f);
@@ -178,6 +198,16 @@ void testMenuAndCutscene()
     }
     check(moved, "cutscene actors are animated (they move while talking)");
     check(!game.cutscene().currentSubtitle().empty(), "dialogue is shown during the scene");
+    check(game.cutscene().currentSpeaker() == "Sentinel",
+          "the first visible line identifies the speaking player");
+    check(game.cutscene().actors()[0].anim == "attack",
+          "the player attack animation is active during the opening exchange");
+
+    step(game, 2.0f);
+    check(game.cutscene().currentSpeaker() == "Raider",
+          "the enemy takes a timed turn speaking");
+    check(game.cutscene().actors()[1].anim == "walk",
+          "the enemy keeps moving during its dialogue");
 
     step(game, duration + 1.0f);
     check(game.state() == GameState::Playing, "when the cutscene ends the game starts");

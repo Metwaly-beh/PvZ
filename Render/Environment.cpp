@@ -508,6 +508,56 @@ void drawProps(Canvas& solid, Canvas& light, float time)
 
 } // namespace
 
+void drawCutsceneEnvironment(Canvas& solid, Canvas& light,
+                             float time, float viewHeight)
+{
+    const Color skyTop(0.12f, 0.29f, 0.34f);
+    const Color skyBottom(0.04f, 0.13f, 0.14f);
+    solid.quad(0.0f, 0.0f, PLAYFIELD_WIDTH, viewHeight, skyTop, skyBottom);
+
+    const float moonY = viewHeight - 1.7f;
+    solid.circle(20.3f, moonY, 0.55f, Color(0.95f, 0.82f, 0.55f), 32);
+    light.glow(20.3f, moonY, 1.8f, Color(0.95f, 0.70f, 0.36f, 0.28f));
+
+    solid.poly({Vec2(0.0f, 6.0f), Vec2(2.4f, 7.3f), Vec2(5.5f, 6.1f),
+                Vec2(8.8f, 7.5f), Vec2(12.1f, 6.1f), Vec2(16.0f, 7.2f),
+                Vec2(19.2f, 6.1f), Vec2(22.0f, 7.4f), Vec2(24.0f, 6.2f),
+                Vec2(24.0f, 0.0f), Vec2(0.0f, 0.0f)}, Color(0.12f, 0.27f, 0.18f));
+
+    solid.quad(0.0f, 0.0f, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT,
+               Color(0.22f, 0.36f, 0.19f), Color(0.08f, 0.19f, 0.12f));
+    for (int lane = 0; lane < LANE_COUNT; ++lane) {
+        const float y = lane * LANE_HEIGHT;
+        solid.quad(0.0f, y + 0.12f, PLAYFIELD_WIDTH, LANE_HEIGHT - 0.24f,
+                   Color(0.35f, 0.39f, 0.19f, 0.34f));
+        solid.quad(0.0f, y + 0.10f, PLAYFIELD_WIDTH, 0.035f,
+                   Color(0.73f, 0.68f, 0.37f, 0.50f));
+    }
+
+    solid.roundedRect(9.7f, 4.35f, 4.6f, 2.0f, 0.22f,
+                      Color(0.38f, 0.31f, 0.20f));
+    solid.poly({Vec2(9.3f, 6.25f), Vec2(12.0f, 7.25f), Vec2(14.7f, 6.25f)},
+               Color(0.48f, 0.37f, 0.20f));
+    solid.roundedRect(11.0f, 4.35f, 2.0f, 1.45f, 0.32f,
+                      Color(0.12f, 0.20f, 0.14f));
+    solid.circle(12.0f, 5.55f, 0.25f, Color(0.94f, 0.76f, 0.35f), 20);
+    solid.ellipse(12.0f, 5.55f, 0.10f, 0.21f, -0.35f,
+                  Color(0.48f, 0.72f, 0.31f), 16);
+    light.glow(12.0f, 5.55f, 0.9f, Color(0.92f, 0.72f, 0.30f, 0.22f));
+
+    for (int i = 0; i < 6; ++i) {
+        const float x = 0.8f + i * 4.5f;
+        if (x > 9.0f && x < 15.0f) continue;
+        const float sway = std::sin(time * 2.0f + i) * 0.06f;
+        solid.line(Vec2(x, 0.15f), Vec2(x + sway, 0.75f), 0.10f,
+                   Color(0.19f, 0.48f, 0.20f));
+        solid.ellipse(x - 0.17f, 0.52f, 0.25f, 0.12f, -0.35f,
+                      Color(0.37f, 0.67f, 0.26f), 16);
+        solid.ellipse(x + 0.17f, 0.66f, 0.25f, 0.12f, 0.35f,
+                      Color(0.43f, 0.72f, 0.29f), 16);
+    }
+}
+
 void drawEnvironment(const Game& game, Canvas& solid, Canvas& light,
                      float time, float viewHeight)
 {

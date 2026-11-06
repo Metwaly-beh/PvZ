@@ -20,6 +20,7 @@
 #include <string>
 
 class Canvas;
+class Cutscene;
 class Game;
 
 struct SheetInfo {
@@ -49,4 +50,5 @@ const CharArt& artFor(EnemyType type);
 // `time` is the frame clock; the animation phase itself comes from each
 // character's own animTime so it stays in step with the simulation.
 void drawCharacters(const Game& game, Canvas& solid, float time);
+void drawCutsceneCharacters(const Cutscene& cutscene, Canvas& solid, Canvas& light);
 #endif

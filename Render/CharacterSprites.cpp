@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include "Canvas.h"
+#include "Cutscene.h"
 #include "Game.h"
 #include "SpriteAtlas.h"
 
@@ -124,5 +125,58 @@ void drawCharacters(const Game& game, Canvas& solid, float /*time*/) {
         float y = game.playfield().laneCenterY(e.lane);
         float bob = (e.state == CharState::Advancing) ? std::sin(e.animTime * 7.0f) * 0.035f : 0.0f;
         drawOne(solid, artFor(e.type), e.x, y, e.animTime, e.state, e.hitFlash, bob, SIZE);
+    }
+}
+
+void drawCutsceneCharacters(const Cutscene& cutscene, Canvas& solid, Canvas& light)
+{
+    const std::vector<CutsceneActor>& actors = cutscene.actors();
+    const float size = 1.8f;
+
+    for (size_t i = 0; i < actors.size(); ++i) {
+        const CutsceneActor& actor = actors[i];
+        if (!actor.visible) continue;
+
+        const CharArt& art = actor.isPlayer
+            ? artFor(PlayerType::Melee) : artFor(EnemyType::HardMelee);
+        const CharState state = actor.anim == "walk" ? CharState::Advancing
+            : actor.anim == "attack" ? CharState::Attacking
+            : actor.anim == "dead" ? CharState::Dead : CharState::Idle;
+        const float bob = state == CharState::Advancing
+            ? std::sin(cutscene.time() * 8.0f + static_cast<float>(i)) * 0.07f
+            : 0.0f;
+
+        solid.ellipse(actor.pos.x, actor.pos.y - size * 0.43f,
+                      size * 0.35f, 0.12f, 0.0f,
+                      Color(0.02f, 0.035f, 0.025f, 0.55f), 24);
+        drawOne(solid, art, actor.pos.x, actor.pos.y, cutscene.time(),
+                state, 0.0f, bob, size);
+
+        if (actor.name == cutscene.currentSpeaker()) {
+            const float pulse = 0.5f + 0.5f * std::sin(cutscene.time() * 10.0f);
+            const float bubbleY = actor.pos.y + 1.28f + pulse * 0.05f;
+            const Color bubble(0.97f, 0.91f, 0.71f, 0.96f);
+            solid.roundedRect(actor.pos.x - 0.62f, bubbleY - 0.16f,
+                              1.24f, 0.42f, 0.12f, bubble);
+            solid.poly({Vec2(actor.pos.x - 0.10f, bubbleY - 0.15f),
+                        Vec2(actor.pos.x + 0.12f, bubbleY - 0.15f),
+                        Vec2(actor.pos.x + 0.02f, bubbleY - 0.34f)}, bubble);
+            for (int dot = 0; dot < 3; ++dot)
+                solid.circle(actor.pos.x - 0.24f + dot * 0.24f, bubbleY + 0.05f,
+                             0.045f + pulse * 0.008f, Color(0.20f, 0.32f, 0.22f), 12);
+        }
+    }
+
+    if (cutscene.time() >= 9.0f && cutscene.time() <= 10.4f && actors.size() >= 2) {
+        const float clashX = (actors[0].pos.x + actors[1].pos.x) * 0.5f;
+        const float pulse = 0.5f + 0.5f * std::sin(cutscene.time() * 24.0f);
+        light.glow(clashX, actors[0].pos.y + 0.2f, 0.42f + pulse * 0.18f,
+                   Color(1.0f, 0.62f, 0.18f, 0.78f));
+        solid.line(Vec2(clashX - 0.28f, actors[0].pos.y - 0.15f),
+                   Vec2(clashX + 0.25f, actors[0].pos.y + 0.4f),
+                   0.07f, Color(1.0f, 0.88f, 0.50f, 0.95f));
+        solid.line(Vec2(clashX + 0.28f, actors[0].pos.y - 0.15f),
+                   Vec2(clashX - 0.25f, actors[0].pos.y + 0.4f),
+                   0.07f, Color(1.0f, 0.88f, 0.50f, 0.95f));
     }
 }

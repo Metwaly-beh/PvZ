@@ -27,5 +27,7 @@
 
 void drawEnvironment(const Game& game, Canvas& solid, Canvas& light,
                      float time, float viewHeight);
+void drawCutsceneEnvironment(Canvas& solid, Canvas& light,
+                             float time, float viewHeight);
 
 #endif // RENDER_ENVIRONMENT_H

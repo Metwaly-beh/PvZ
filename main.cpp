@@ -17,6 +17,7 @@
 #include <cmath>
 #include <array>
 #include <cctype>
+#include <sstream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -325,6 +326,27 @@ void addText(float x, float y, const std::string& text, float cellWidth,
     }
 }
 
+void addWrappedText(float x, float y, const std::string& text, float cellWidth,
+                    float maxWidth, float red, float green, float blue)
+{
+    const size_t maxCharacters = static_cast<size_t>(maxWidth / (cellWidth * 6.0f));
+    if (maxCharacters == 0) return;
+
+    std::istringstream words(text);
+    std::string word;
+    std::string line;
+    while (words >> word) {
+        if (!line.empty() && line.size() + 1 + word.size() > maxCharacters) {
+            addText(x, y, line, cellWidth, red, green, blue);
+            y -= cellWidth * 4.2f;
+            line.clear();
+        }
+        if (!line.empty()) line += ' ';
+        line += word;
+    }
+    if (!line.empty()) addText(x, y, line, cellWidth, red, green, blue);
+}
+
 void flushShapes(GLuint vao, GLuint vbo)
 {
     if (g_uiVertices.empty()) return;
@@ -590,12 +612,15 @@ void drawMenu(const Game& game)
 
 void drawCutscene(const Game& game)
 {
-    drawGardenBackdrop();
-    addRect(2.0f, 0.70f, 20.0f, 1.25f, 0.05f, 0.10f, 0.10f);
-    addText(2.6f, 1.42f, "A QUIET GARDEN NEEDS A BRAVE TEAM", 0.075f,
-            0.94f, 0.90f, 0.69f);
-    addText(2.6f, 1.02f, game.cutscene().currentSubtitle(), 0.052f,
-            0.84f, 0.91f, 0.82f);
+    addText(1.2f, 5.20f, "THE LAST SEED VAULT", 0.12f,
+            0.96f, 0.88f, 0.56f);
+    addText(1.2f, 4.80f, "ONE GUARDIAN. ONE RAIDER. ONE GARDEN TO SAVE.", 0.060f,
+            0.81f, 0.91f, 0.75f);
+    addRect(1.0f, 0.12f, 22.0f, 1.55f, 0.025f, 0.055f, 0.055f, 0.96f);
+    addText(1.8f, 1.26f, game.cutscene().currentSpeaker(), 0.105f,
+            0.98f, 0.86f, 0.48f);
+    addWrappedText(1.8f, 0.83f, game.cutscene().currentSubtitle(), 0.105f, 20.3f,
+                   0.91f, 0.96f, 0.84f);
     addText(19.2f, 5.60f, "ESC  SKIP", 0.052f, 0.84f, 0.91f, 0.82f);
 }
 

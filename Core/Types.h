@@ -123,7 +123,7 @@ enum class WavePhase
 
 const float PLAYFIELD_WIDTH  = 24.0f;
 const int   LANE_COUNT       = 4;      // spec requires a MINIMUM of three lanes
-const float LANE_HEIGHT      = 1.6f;
+const float LANE_HEIGHT      = 1.5f;
 const float PLAYFIELD_HEIGHT = LANE_COUNT * LANE_HEIGHT;
 
 const float HOME_BASE_X      = 2.0f;   // an enemy reaching this x loses the game

@@ -40,11 +40,17 @@ void SceneRenderer::render(const Game& game, float time, const glm::mat4& projec
     m_renderer.bindTexture(m_atlas);
 
     // everything that stands behind the characters, back to front
-    drawEnvironment(game, m_canvas, m_light, m_time, viewHeight);
+    if (game.state() == GameState::Cutscene)
+        drawCutsceneEnvironment(m_canvas, m_light, m_time, viewHeight);
+    else
+        drawEnvironment(game, m_canvas, m_light, m_time, viewHeight);
 
     // the characters themselves, on top of their lanes and below the
     // interface the host draws straight afterwards
-    drawCharacters(game, m_canvas, m_time);
+    if (game.state() == GameState::Cutscene)
+        drawCutsceneCharacters(game.cutscene(), m_canvas, m_light);
+    else
+        drawCharacters(game, m_canvas, m_time);
 
     // solid shapes first, then the glows on top of them with additive blending
     m_renderer.draw(m_canvas.vertices());
