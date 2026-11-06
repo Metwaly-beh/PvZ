@@ -11,7 +11,7 @@ Projectile makeProjectile(int id, Faction faction, int lane, float x,
     p.x = x;
     p.y = laneCenterY;
     p.vx = vx;
-    p.originX = x;                 // the weapon's reach is measured from here
+    p.originX = x;
     p.range = RANGED_RANGE;
     p.height = height;
     p.damage = damage;
